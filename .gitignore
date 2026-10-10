@@ -1,0 +1,11 @@
+# Bỏ qua các file thực thi của C++ sau khi biên dịch xong
+*.exe
+*.o
+*.out
+
+# Bỏ qua thư mục cấu hình riêng của phần mềm VS Code
+.vscode/
+
+# (Tùy chọn) Bỏ qua file dữ liệu do C++ tự động sinh ra mỗi lần chạy
+# Bỏ dấu # ở dòng dưới nếu bạn không muốn đẩy file json lên GitHub
+# graph_data.json

@@ -1,25 +1,21 @@
 #include "search.h"
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
-// Hàm phụ trợ: So sánh chuỗi mẫu (pattern) với hậu tố tại một vị trí cụ thể
-// Trả về: 0 nếu khớp, -1 nếu text < pattern, 1 nếu text > pattern
+//Hàm phụ trợ cho binary search, so sánh pattern với suffix tại vị trí suffixIndex trong text
 int comparePattern(const string& text, int suffixIndex, const string& pattern) {
     int m = pattern.length();
-    // Trích xuất tiền tố của hậu tố có độ dài bằng với pattern
+
     string sub = text.substr(suffixIndex, m); 
     
     if (sub == pattern) return 0;
     if (sub < pattern) return -1;
     return 1;
 }
-
-// ---------------------------------------------------------
-// YÊU CẦU 2: Cài đặt Binary Search trên Suffix Array
-// Độ phức tạp: O(m * log n)
-// ---------------------------------------------------------
-vector<int> searchPattern(const string& text, const string& pattern, const vector<int>& suffixArr) {
+//Hàm BinarySearch để tìm tất cả các vị trí xuất hiện của pattern trong text dựa trên suffix array
+vector<int> BinarySearch(const string& text, const string& pattern, const vector<int>& suffixArr) {
     vector<int> positions;
     int n = text.length();
     int m = pattern.length();
@@ -28,14 +24,14 @@ vector<int> searchPattern(const string& text, const string& pattern, const vecto
     int left = 0, right = n - 1;
     int firstMatch = -1;
 
-    // BƯỚC 1: Tìm vị trí xuất hiện ĐẦU TIÊN (Lower Bound) của mẫu
+    //Tìm vị trí xuất hiện ĐẦU TIÊN (Lower Bound) của mẫu
     while (left <= right) {
         int mid = left + (right - left) / 2;
         int cmp = comparePattern(text, suffixArr[mid], pattern);
 
         if (cmp == 0) {
             firstMatch = mid;
-            right = mid - 1; // Tiếp tục ép giới hạn tìm kiếm về phía bên trái
+            right = mid - 1; 
         } else if (cmp < 0) {
             left = mid + 1;
         } else {
@@ -43,10 +39,9 @@ vector<int> searchPattern(const string& text, const string& pattern, const vecto
         }
     }
 
-    // Nếu không tìm thấy bất kỳ kết quả nào
     if (firstMatch == -1) return positions; 
 
-    // BƯỚC 2: Tìm vị trí xuất hiện CUỐI CÙNG (Upper Bound) của mẫu
+    //Tìm vị trí xuất hiện CUỐI CÙNG (Upper Bound) của mẫu
     left = firstMatch; 
     right = n - 1;
     int lastMatch = firstMatch;
@@ -57,7 +52,7 @@ vector<int> searchPattern(const string& text, const string& pattern, const vecto
 
         if (cmp == 0) {
             lastMatch = mid;
-            left = mid + 1; // Tiếp tục ép giới hạn tìm kiếm về phía bên phải
+            left = mid + 1; 
         } else if (cmp < 0) {
             left = mid + 1;
         } else {
@@ -65,7 +60,7 @@ vector<int> searchPattern(const string& text, const string& pattern, const vecto
         }
     }
 
-    // BƯỚC 3: Thu thập tất cả các vị trí thực tế trong văn bản gốc
+    // Thu thập tất cả các vị trí xuất hiện của mẫu trong text
     for (int i = firstMatch; i <= lastMatch; i++) {
         positions.push_back(suffixArr[i]);
     }
@@ -73,17 +68,13 @@ vector<int> searchPattern(const string& text, const string& pattern, const vecto
     return positions;
 }
 
-// ---------------------------------------------------------
-// YÊU CẦU BỔ SUNG: Cài đặt Naive Search để phục vụ Benchmark
-// Độ phức tạp: O(n * m)
-// ---------------------------------------------------------
+//Naive Search
 vector<int> naiveSearch(const string& text, const string& pattern) {
     vector<int> positions;
     int n = text.length();
     int m = pattern.length();
     if (m == 0 || m > n) return positions;
 
-    // Quét toàn bộ văn bản từ trái sang phải
     for (int i = 0; i <= n - m; i++) {
         bool match = true;
         for (int j = 0; j < m; j++) {

@@ -2,15 +2,56 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <chrono> // Thư viện bắt buộc để đo thời gian
-
+#include <chrono> 
+#include <algorithm>
+#include <random>
+#include <sstream>
 // Nhúng các file header 
 #include "suffix_array.h"
 #include "pattern_search.h"
 
 using namespace std;
 using namespace std::chrono;
+using Clock = chrono::steady_clock;
 
+double msSince(Clock::time_point t0) {
+    return chrono::duration<double, milli>(Clock::now() - t0).count();
+}
+
+void bench(const string& full, int n, int Q) {
+    string s = full.substr(0, n);
+    mt19937 rng(42);
+    vector<string> qs;
+    for (int i = 0; i < Q; i++) {
+        int m = 5 + rng() % 16;
+        string q;
+        if (i % 10 == 9) for (int j = 0; j < m; j++) q += char('a' + rng() % 26);
+        else q = s.substr(rng() % (n - m + 1), m);
+        qs.push_back(q);
+    }
+    auto t0 = Clock::now();
+    vector<int> sa = buildSuffixArray(s);
+    double B = msSince(t0);
+    size_t sink = 0;
+
+    t0 = Clock::now();
+    for (auto& q : qs) sink += BinarySearch(s, q, sa).size();
+    double S = msSince(t0) / Q;
+
+    t0 = Clock::now();
+    for (auto& q : qs) sink += naiveSearch(s, q).size();
+    double N = msSince(t0) / Q;
+
+    int bad = 0;
+    for (auto& q : qs) {
+        auto a = BinarySearch(s, q, sa), b = naiveSearch(s, q);
+        sort(a.begin(), a.end());
+        sort(b.begin(), b.end());
+        if (a != b) bad++;
+    }
+    printf("%d,%.3f,%.6f,%.6f,%.1f,%s\n", n, B, S, N,
+           N > S ? B / (N - S) : -1.0, bad ? "MISMATCH" : "OK");
+}
 // ==========================================
 // HÀM 1: CHẠY TEST NHỎ (Kiểm tra tính đúng đắn)
 // ==========================================
@@ -39,73 +80,35 @@ void runSmallTest() {
 // ==========================================
 // HÀM 2: CHẠY BENCHMARK (Đo hiệu năng và Crossover point)
 // ==========================================
-void runBenchmark() {
-    cout << "\n--- 2. CHAY BENCHMARK (So sanh hieu nang) ---" << endl;
+void runAutomatedBenchmark() {
+    cout << "\n--- 2. CHAY BENCHMARK (Sinh du lieu & tinh Crossover) ---\n" << endl;
     
-    // GHI CHÚ: Bạn cần tự tạo file large_text.txt (nội dung dài) 
-    // và queries.txt (chứa nhiều pattern, mỗi pattern 1 dòng) trong thư mục data/
-    ifstream textFile("data/large_text.txt");
-    ifstream queryFile("data/queries.txt");
-
-    if (!textFile.is_open() || !queryFile.is_open()) {
-        cout << "[Canh bao] Khong tim thay file data/large_text.txt hoac data/queries.txt!" << endl;
-        cout << "Vui long tao file de chay tinh nang Benchmark." << endl;
+    ifstream f("large_text.txt", ios::binary);
+    if (!f.is_open()) {
+        cout << "[Loi] Khong doc duoc file large_text.txt" << endl;
         return;
     }
-
-    // Đọc text lớn
-    string text((istreambuf_iterator<char>(textFile)), istreambuf_iterator<char>());
-    textFile.close();
     
-    // Đọc danh sách 100+ truy vấn
-    vector<string> queries;
-    string q;
-    while (queryFile >> q) {
-        queries.push_back(q);
-    }
-    queryFile.close();
-
-    cout << "Do dai van ban: " << text.length() << " ky tu." << endl;
-    cout << "So luong truy van: " << queries.size() << " mau." << endl;
-
-    // ----- ĐO THỜI GIAN SUFFIX ARRAY -----
-    auto startSA = high_resolution_clock::now();
+    stringstream ss; 
+    ss << f.rdbuf();
+    string s = ss.str();
     
-    // Tiền xử lý (Build SA)
-    vector<int> sa = buildSuffixArray(text);
-    
-    // Tìm kiếm
-    int totalMatchesSA = 0;
-    for (const string& pattern : queries) {
-        totalMatchesSA += BinarySearch(text, pattern, sa).size();
+    if (s.empty()) { 
+        cout << "[Loi] File van ban rong!" << endl; 
+        return; 
     }
     
-    auto endSA = high_resolution_clock::now();
-    auto durationSA = duration_cast<milliseconds>(endSA - startSA).count();
-
-    // ----- ĐO THỜI GIAN NAIVE SEARCH -----
-    auto startNaive = high_resolution_clock::now();
+    // In Header của bảng CSV
+    printf("n,B_ms,S_ms,N_ms,crossover_q,check\n");
     
-    int totalMatchesNaive = 0;
-    for (const string& pattern : queries) {
-        totalMatchesNaive += naiveSearch(text, pattern).size();
+    // Chạy vòng lặp test với các kích thước văn bản tăng dần
+    for (int n : {1000, 10000, 50000}) {
+        if (n < (int)s.size()) bench(s, n, 200);
     }
-    
-    auto endNaive = high_resolution_clock::now();
-    auto durationNaive = duration_cast<milliseconds>(endNaive - startNaive).count();
-
-    // ----- IN KẾT QUẢ -----
-    cout << "\n[KET QUA BENCHMARK]" << endl;
-    cout << "Suffix Array (Tien xu ly + Tim " << queries.size() << " lan): " << durationSA << " ms" << endl;
-    cout << "Naive Search (Tim " << queries.size() << " lan): " << durationNaive << " ms" << endl;
-    
-    if (durationSA < durationNaive) {
-        cout << "=> Suffix Array NHANH HON! Day la minh chung cho viec tien xu ly (O(n log^2 n)) rat xung dang khi co nhieu truy van." << endl;
-    } else {
-        cout << "=> Naive Search dang nhanh hon. Can tang so luong truy van (queries) len nua de thay Crossover point." << endl;
-    }
+    // Chạy test với toàn bộ độ dài văn bản
+    bench(s, s.size(), 200);
+    cout << "\n[Hoan tat Benchmark. Ban co the copy du lieu tren vao Excel de ve bieu do.]" << endl;
 }
-
 int main() {
     cout << "=========================================" << endl;
     cout << " DSA Project: Suffix Array Pattern Search" << endl;
@@ -123,7 +126,7 @@ int main() {
         if (choice == 1) {
             runSmallTest();
         } else if (choice == 2) {
-            runBenchmark();
+            runAutomatedBenchmark();
         }
     } while (choice != 0);
 

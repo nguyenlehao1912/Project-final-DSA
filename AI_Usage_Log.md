@@ -18,3 +18,14 @@
 | 14/10/2026 | "Tôi chưa hiểu link blob/commit cụ thể thể hiện công việc đã làm là gì." | Gemini 3.1 Pro | Phân biệt được link repo root với link blob/commit. Áp dụng để lấy đúng đường dẫn file cụ thể trên GitHub nhằm khắc phục lỗi nộp báo cáo. |
 | 25/10/2026 | "bây giờ tới tôi làm pattern_search", "hàm comparePattern để làm gì", "ví dụ mẫu" | Gemini 3.1 Pro | Nắm được logic của hàm so sánh tiền tố (comparePattern) để điều hướng không gian tìm kiếm trong Binary Search. Tham khảo ví dụ trace tay để hiểu luồng chạy. |
 | 25/10/2026 | "Vậy 2 file đó làm sao để kết hợp đưa vào file main.cpp", "tại sao các biến phải có dấu &" | Gemini 3.1 Pro | Tạo các file header (`.h`) để liên kết các hàm từ nhiều file `.cpp` khác nhau vào `main.cpp`. Ứng dụng kỹ thuật truyền tham chiếu (`&`) kết hợp `const` để tối ưu hóa hiệu năng, tránh sao chép dữ liệu khi benchmark mảng lớn. |
+----------------------
+## Tuần 3
+# Nhật ký sử dụng AI (AI Usage Log)
+
+| Ngày | Lời nhắc (Prompt/Question) | Công cụ AI | Cách nhóm áp dụng vào dự án |
+| :--- | :--- | :--- | :--- |
+| 30/10/2026 | "Cách gộp các file và sinh file small_test.txt để chạy thử nghiệm. Bị lỗi gạch đỏ khi `#include <suffix_array.h>` và lỗi multiple definition." | Gemini | Tạo các file header (`suffix_array.h`, `pattern_search.h`), sử dụng `#ifndef`, `#define` và dùng lệnh `g++ main.cpp suffix_array.cpp pattern_search.cpp -o dsa` để biên dịch chuẩn. |
+| 31/10/2026 | "Code file suffix_array đã giống ban đầu chưa, tôi chỉ có thay thành vector mà thôi. Sửa giúp lỗi cú pháp." | Gemini | Fix lỗi cú pháp, chuyển đổi thành công mảng động C-style sang `std::vector` và `std::string` chuẩn xác trong toàn bộ hàm Prefix Doubling. |
+| 31/10/2026 | "Thành viên kia đã tách thành benchmark riêng, bây giờ làm sao để kết nối nó với file main.cpp? Bỏ hàm main trong file benchmark.cpp đi được không?" | Gemini | Bỏ hàm `main` cũ, bọc logic đo thời gian bằng `<chrono>` và sinh truy vấn ngẫu nhiên thành hàm `runAutomatedBenchmark()` rồi gọi thẳng từ Menu của `main.cpp`. |
+| 01/11/2026 | "Tại sao nó báo cáo là không chạy đc file large_text.txt? File đó đc lưu trong thư mục này lun (kèm hình ảnh)." | Gemini | Bỏ `freopen`, đổi sang dùng `std::ifstream` để giữ menu tương tác. Điều chỉnh lại cấu trúc thư mục hoặc xóa tiền tố `data/` trong code để đọc file thành công. |
+| 02/11/2026 | "Cách tìm crossover point? Crossover point này đã hợp lí chưa? Cần vẽ trong excel thì làm sao?" | Gemini | Đưa công thức tính Crossover point vào file giải trình thuật toán (`Self_Explanation.md`). Làm theo hướng dẫn của AI để thiết lập 2 trục X, Y sang Logarithmic scale và vẽ biểu đồ phân tán (Scatter) trên Excel. |

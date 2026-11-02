@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <random>
 #include <sstream>
+#include <cstdio>
 // Nhúng các file header 
 #include "suffix_array.h"
 #include "pattern_search.h"
@@ -17,8 +18,12 @@ using Clock = chrono::steady_clock;
 double msSince(Clock::time_point t0) {
     return chrono::duration<double, milli>(Clock::now() - t0).count();
 }
-
+double median(vector<double> v) {
+    sort(v.begin(), v.end());
+    return v[v.size() / 2];
+}
 void bench(const string& full, int n, int Q) {
+    if (n < 25) return; // tranhs n - m + 1 <= 0
     string s = full.substr(0, n);
     mt19937 rng(42);
     vector<string> qs;
@@ -29,19 +34,27 @@ void bench(const string& full, int n, int Q) {
         else q = s.substr(rng() % (n - m + 1), m);
         qs.push_back(q);
     }
-    auto t0 = Clock::now();
-    vector<int> sa = buildSuffixArray(s);
-    double B = msSince(t0);
+    const int REP = 7;
     size_t sink = 0;
+    vector<double> vB, vS, vN;
 
-    t0 = Clock::now();
-    for (auto& q : qs) sink += BinarySearch(s, q, sa).size();
-    double S = msSince(t0) / Q;
+    vector<int> sa = buildSuffixArray(s);
+    for(auto &q : qs) sink += BinarySearch(s, q, sa).size();
+    for(auto &q : qs) sink += naiveSearch(s, q).size();
+    for (int rep = 0; rep < REP; rep++) {
+        auto t0 = Clock::now();
+        sa = buildSuffixArray(s);
+        vB.push_back(msSince(t0));
 
-    t0 = Clock::now();
-    for (auto& q : qs) sink += naiveSearch(s, q).size();
-    double N = msSince(t0) / Q;
+        t0 = Clock::now();
+        for (auto& q : qs) sink += BinarySearch(s, q, sa).size();
+        vS.push_back(msSince(t0)/Q);
 
+        t0 = Clock::now();
+        for (auto& q : qs) sink += BinarySearch(s, q, sa).size();
+        vN.push_back(msSince(t0)/Q);
+    }
+    double B = median(vB), S = median(vS), N = median(vN);
     int bad = 0;
     for (auto& q : qs) {
         auto a = BinarySearch(s, q, sa), b = naiveSearch(s, q);
@@ -49,8 +62,8 @@ void bench(const string& full, int n, int Q) {
         sort(b.begin(), b.end());
         if (a != b) bad++;
     }
-    printf("%d,%.3f,%.6f,%.6f,%.1f,%s\n", n, B, S, N,
-           N > S ? B / (N - S) : -1.0, bad ? "MISMATCH" : "OK");
+    printf("%d,%.3f,%.6f,%.6f,%.1f,%s\n", n, B, S, N, N > S ? B / (N - S) : -1.0, bad ? "MISMATCH" : "OK");
+    fprintf(stderr, "sink=%zu\n", sink);
 }
 // ==========================================
 // HÀM 1: CHẠY TEST NHỎ (Kiểm tra tính đúng đắn)
@@ -103,10 +116,10 @@ void runAutomatedBenchmark() {
     
     // Chạy vòng lặp test với các kích thước văn bản tăng dần
     for (int n : {1000, 10000, 50000}) {
-        if (n < (int)s.size()) bench(s, n, 200);
+        if (n < (int)s.size()) bench(s, n, 2000);
     }
     // Chạy test với toàn bộ độ dài văn bản
-    bench(s, s.size(), 200);
+    bench(s, s.size(), 2000);
     cout << "\n[Hoan tat Benchmark. Ban co the copy du lieu tren vao Excel de ve bieu do.]" << endl;
 }
 int main() {

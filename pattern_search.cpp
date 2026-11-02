@@ -4,15 +4,11 @@
 
 using namespace std;
 
-//Hàm phụ trợ cho binary search, so sánh pattern với suffix tại vị trí suffixIndex trong text
-int comparePattern(const string& text, int suffixIndex, const string& pattern) {
-    int m = pattern.length();
 
-    string sub = text.substr(suffixIndex, m); 
-    
-    if (sub == pattern) return 0;
-    if (sub < pattern) return -1;
-    return 1;
+int comparePattern(const string& text, int suffixIndex, const string& pattern) {
+    int c = text.compare(suffixIndex, pattern.size(), pattern);
+    return (c > 0) - (c < 0); 
+
 }
 //Hàm BinarySearch để tìm tất cả các vị trí xuất hiện của pattern trong text dựa trên suffix array
 vector<int> BinarySearch(const string& text, const string& pattern, const vector<int>& suffixArr) {

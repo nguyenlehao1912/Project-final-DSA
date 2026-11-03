@@ -122,24 +122,83 @@ void runAutomatedBenchmark() {
     bench(s, s.size(), 2000);
     cout << "\n[Hoan tat Benchmark. Ban co the copy du lieu tren vao Excel de ve bieu do.]" << endl;
 }
-int main() {
-    cout << "=========================================" << endl;
-    cout << " DSA Project: Suffix Array Pattern Search" << endl;
-    cout << "=========================================" << endl;
+// ==========================================
+// MENU 3: DEMO THUYẾT TRÌNH (So sánh trực tiếp 1 Query)
+// ==========================================
+void runLiveDemo() {
+    cout << "\n--- 3. DEMO THUYET TRINH (So sanh toc do truc tiep) ---\n" << endl;
+    
+    ifstream f("large_text.txt", ios::binary);
+    if (!f.is_open()) {
+        cout << "[Loi] Khong doc duoc file large_text.txt" << endl;
+        return;
+    }
+    
+    stringstream ss; 
+    ss << f.rdbuf();
+    string text = ss.str();
+    
+    if (text.empty()) { 
+        cout << "[Loi] File van ban rong!" << endl; 
+        return; 
+    }
+    
+    cout << "[*] Kich thuoc van ban: " << text.size() << " ky tu." << endl;
+    
+    // Build SA trước
+    cout << "[*] Dang xay dung Suffix Array... ";
+    auto t0 = Clock::now();
+    vector<int> sa = buildSuffixArray(text);
+    cout << msSince(t0) << " ms.\n" << endl;
 
+    // Nhập từ khóa cần tìm
+    string pattern;
+    cout << ">> Nhap tu khoa can tim (VD: believe, matter, lamps): ";
+    cin >> ws; // clear khoảng trắng
+    getline(cin, pattern);
+
+    cout << "\nBAT DAU TIM KIEM TỪ KHOÁ: '" << pattern << "'\n";
+    cout << "--------------------------------------------------\n";
+
+    // Đo Naive Search
+    t0 = Clock::now();
+    vector<int> resNaive = naiveSearch(text, pattern);
+    double timeNaive = msSince(t0);
+    
+    // Đo Suffix Array Search
+    t0 = Clock::now();
+    vector<int> resSA = BinarySearch(text, pattern, sa);
+    double timeSA = msSince(t0);
+
+    // In kết quả đối chiếu sát nhau
+    printf("[Naive Search]  Thoi gian: %8.4f ms | Tim thay: %zu ket qua\n", timeNaive, resNaive.size());
+    printf("[Suffix Array]  Thoi gian: %8.4f ms | Tim thay: %zu ket qua\n", timeSA, resSA.size());
+    cout << "--------------------------------------------------\n";
+    
+    if (timeNaive > 0 && timeSA > 0) {
+        printf("=> Suffix Array nhanh hon khoang %.1f lan tren 1 query!\n", timeNaive / timeSA);
+    }
+    cout << endl;
+}
+int main() {
     int choice;
     do {
-        cout << "\nMenu:" << endl;
+        cout << "=========================================" << endl;
+        cout << " DSA Project: Suffix Array Pattern Search" << endl;
+        cout << "=========================================" << endl;
         cout << "1. Chay Small Test (Kiem tra dung sai)" << endl;
-        cout << "2. Chay Benchmark (Kiem tra toc do & Crossover point)" << endl;
+        cout << "2. Chay Benchmark (Test toc do & Crossover)" << endl;
+        cout << "3. Demo Thuyet Trinh (So sanh truc tiep)" << endl; // Thêm dòng này
         cout << "0. Thoat" << endl;
         cout << "Nhap lua chon cua ban: ";
-        cin >> choice;
+        if (!(cin >> choice)) break;
 
         if (choice == 1) {
             runSmallTest();
         } else if (choice == 2) {
             runAutomatedBenchmark();
+        } else if (choice == 3) {
+            runLiveDemo(); // Thêm dòng này
         }
     } while (choice != 0);
 

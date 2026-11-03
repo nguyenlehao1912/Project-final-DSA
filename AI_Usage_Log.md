@@ -29,3 +29,13 @@
 | 31/10/2026 | "Thành viên kia đã tách thành benchmark riêng, bây giờ làm sao để kết nối nó với file main.cpp? Bỏ hàm main trong file benchmark.cpp đi được không?" | Gemini | Bỏ hàm `main` cũ, bọc logic đo thời gian bằng `<chrono>` và sinh truy vấn ngẫu nhiên thành hàm `runAutomatedBenchmark()` rồi gọi thẳng từ Menu của `main.cpp`. |
 | 01/11/2026 | "Tại sao nó báo cáo là không chạy đc file large_text.txt? File đó đc lưu trong thư mục này lun (kèm hình ảnh)." | Gemini | Bỏ `freopen`, đổi sang dùng `std::ifstream` để giữ menu tương tác. Điều chỉnh lại cấu trúc thư mục hoặc xóa tiền tố `data/` trong code để đọc file thành công. |
 | 02/11/2026 | "Cách tìm crossover point? Crossover point này đã hợp lí chưa? Cần vẽ trong excel thì làm sao?" | Gemini | Đưa công thức tính Crossover point vào file giải trình thuật toán (`Self_Explanation.md`). Làm theo hướng dẫn của AI để thiết lập 2 trục X, Y sang Logarithmic scale và vẽ biểu đồ phân tán (Scatter) trên Excel. |
+----------------------
+## Tuần 4
+# Nhật ký sử dụng AI (AI Usage Log)
+
+| Ngày | Lời nhắc (Prompt/Question) | Công cụ AI | Cách nhóm áp dụng vào dự án |
+| :--- | :--- | :--- | :--- |
+| 03/11/2026 | "Đây là nhận xét của giáo viên, hãy cho tôi biết tôi cần làm gì" | Gemini | Phân tích nhận xét của giảng viên, xác định các công việc trọng tâm cần hoàn thiện cho báo cáo tổng kết và buổi bảo vệ đồ án. |
+| 03/11/2026 | "Bây giờ hãy giải quyết từ phần 3" | Gemini | Viết báo cáo đối chiếu thời gian thực tế so với lý thuyết Big-O. Thêm tính năng "Demo Thuyết Trình" vào `main.cpp` để so sánh tốc độ trực tiếp trên Terminal. |
+| 03/11/2026 | "cho tôi cái file readme hoàn chỉnh" | Gemini | Tổng hợp và định dạng file `README.md` chuẩn Markdown, bao gồm bảng số liệu đối chiếu và cú pháp chèn ảnh đồ thị. |
+| 03/11/2026 | "Hãy tạo cho tôi cái ảnh benchmark_chart.png" | Gemini | Vẽ đồ thị Crossover Point hiển thị trực quan sự chênh lệch thời gian (Log Scale) giữa Suffix Array và Naive Search. |

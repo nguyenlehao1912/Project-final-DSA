@@ -1,8 +1,8 @@
 # Đồ án Cấu trúc Dữ liệu & Thuật toán: Suffix Array Pattern Search
 
 **Nhóm thực hiện:**
-1. Nguyễn Lê Hảo
-2. Ngô Thị Minh Thư
+1. Nguyễn Lê Hảo - 25110019
+2. Ngô Thị Minh Thư - 25110062
 
 ---
 
